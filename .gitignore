@@ -1,0 +1,9 @@
+.DS_Store
+._*
+Thumbs.db
+dist/
+# Font con licenza: nei pacchetti sì, nel repository pubblico no (crea_pacchetti.sh li prende da BORIN Batch)
+estensione/com.borin.configuratore/fonts/gotham/
+# Porta di debug della copia di sviluppo
+estensione/com.borin.configuratore/.debug
+node_modules/

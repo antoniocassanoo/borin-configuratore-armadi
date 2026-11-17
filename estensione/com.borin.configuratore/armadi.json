@@ -1,0 +1,13 @@
+{
+  "nota": "Tipi di armadio e regole per i nomi dei file. I gruppi e le opzioni si leggono dai PSD.",
+  "tipi": [
+    { "id": "singolo", "nome": "Singolo", "ante": 1, "nomeFile": "Armadio Singola Anta", "psd": "Armadio Singolo.psd" },
+    { "id": "doppio", "nome": "Doppio", "ante": 2, "nomeFile": "Armadio Doppia Anta", "psd": "Armadio Doppio.psd" },
+    { "id": "triplo", "nome": "Triplo", "ante": 3, "nomeFile": "Armadio Tripla Anta", "psd": "Armadio Triplo.psd" }
+  ],
+  "colore": "Bianco",
+  "ordineNelNome": ["serratura", "base", "scomparti-inferiori"],
+  "prefissi": { "serratura": "Serratura " },
+  "vuoto": "Vuoto",
+  "nomiNelFile": {}
+}

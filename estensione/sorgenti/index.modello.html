@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BORIN Configuratore</title>
+<link rel="stylesheet" href="css/borin.css">
+<link rel="stylesheet" href="css/armadi.css">
+</head>
+<body>
+
+<div id="intro" role="presentation">
+<!--INTRO-->
+  <div class="intro-sotto">Configuratore armadi per Photoshop</div>
+  <div class="intro-salta">clic per entrare</div>
+</div>
+
+<header class="testa">
+  <div class="marchio">
+<!--MARCHIO-->
+  </div>
+  <div class="titolo"><b>Configuratore armadi</b><span>per Photoshop, versione <span id="versione">1.0</span></span></div>
+  <div class="statoPs" id="statoPs" title="Collegamento con Photoshop"><i></i><span>Photoshop…</span></div>
+</header>
+
+<nav class="schede" role="tablist">
+  <button role="tab" data-scheda="armadio" aria-selected="true">Armadio</button>
+  <button role="tab" data-scheda="info" aria-selected="false">Info <span class="segnale" id="segnaleInfo" hidden></span></button>
+</nav>
+
+<main id="contenuto">
+
+<!-- ================================================================ ARMADIO -->
+<section id="s-armadio" class="scheda attiva" role="tabpanel">
+  <div id="novita" class="ok-box" hidden></div>
+  <div id="statoProgetti" hidden></div>
+  <div id="notificaLivelli" class="avviso" hidden></div>
+
+  <article class="blocco riga-tipi">
+    <h2><span class="passo">1</span>Tipo</h2>
+    <div class="tipi" id="tipi" role="radiogroup" aria-label="Tipo di armadio"></div>
+  </article>
+
+  <div class="banco">
+    <div class="colonna-vista">
+      <figure class="piatto" id="piatto" title="Clic per ingrandire">
+        <div class="pila" id="pila"></div>
+        <div class="attesa" id="attesa" hidden><div class="barra"><i id="attesaBarra"></i></div><span id="attesaTesto">Preparo l'anteprima…</span></div>
+        <button class="sul-piatto" id="bVediPS" title="Apre il PSD in Photoshop con queste scelte accese, senza salvarlo">Vedi in Photoshop</button>
+      </figure>
+    </div>
+
+    <div class="colonna-scelte">
+      <article class="blocco" id="bloccoScelte">
+        <h2><span class="passo">2</span>Scelte <span class="dx" id="contaCombinazioni"></span></h2>
+        <div id="gruppi"><p class="nota" style="margin:0">Le scelte compaiono quando l'anteprima è pronta.</p></div>
+      </article>
+
+      <article class="blocco" id="bloccoUscita">
+        <h2><span class="passo" id="passoUscita">3</span>Nome e cartella</h2>
+        <div class="targhetta" id="targhetta">
+          <div class="campo-nome">
+            <input type="text" id="nomeFile" spellcheck="false" autocomplete="off" aria-label="Nome del file">
+            <button class="pulsante leggero" id="bNomeAuto" title="Torna al nome automatico" hidden>Automatico</button>
+          </div>
+          <p class="nota piccola" id="notaNome">Il nome si scrive da solo con le scelte; puoi cambiarlo.</p>
+        </div>
+        <span class="etichetta">Dove salvare</span>
+        <div class="percorso"><span class="via vuota" id="viaUscita">Nessuna cartella scelta</span><button class="pulsante leggero" id="bApriUscita" title="Apri la cartella">Apri</button><button class="pulsante" id="bUscita">Cambia…</button></div>
+        <span class="etichetta">Formati</span>
+        <div class="chip-formati" id="chipFormati">
+          <label class="chip"><input type="checkbox" data-k="psd"><span><b>PSD</b><small>a livelli</small></span></label>
+          <label class="chip"><input type="checkbox" data-k="jpg"><span><b>JPG</b><small>su bianco</small></span></label>
+          <label class="chip"><input type="checkbox" data-k="png"><span><b>PNG</b><small>trasparente</small></span></label>
+          <label class="chip"><input type="checkbox" data-k="webp"><span><b>WebP</b><small>trasparente</small></span></label>
+        </div>
+        <details class="avanzate" id="altreUscite">
+          <summary>Tela e cartelle <span class="riassunto" id="rUscite"></span></summary>
+          <span class="etichetta">Tela</span>
+          <div class="seg" id="sceltaTela">
+            <button data-v="5120">5120 × 5120 · e-commerce</button>
+            <button data-v="1000">1000 × 1000 · web</button>
+          </div>
+          <span class="etichetta">Come ordinarli</span>
+          <div class="seg" id="sceltaStruttura">
+            <button data-v="FORMATO">Per formato</button>
+            <button data-v="PER_PRODOTTO">Per armadio</button>
+            <button data-v="UNICA">Tutti insieme</button>
+          </div>
+          <p class="nota piccola" id="esempioUscita"></p>
+        </details>
+      </article>
+
+      <article class="blocco" id="bloccoEsito" hidden>
+        <h2><span id="esitoTitolo">Fatto</span> <span class="dx num" id="esitoDurata"></span></h2>
+        <div class="esito">
+          <div class="esito-img" id="esitoImg"></div>
+          <div class="esito-testo" id="esitoTesto"></div>
+        </div>
+        <div class="riga" style="margin-top:10px">
+          <button class="pulsante" id="bEsitoCartella">Apri la cartella</button>
+          <button class="pulsante" id="bEsitoFile" hidden>Mostra il file</button>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ INFO -->
+<section id="s-info" class="scheda" role="tabpanel">
+  <article class="blocco">
+    <h2>Come si usa</h2>
+    <ol class="nota" style="padding-left:18px;margin:0">
+      <li>Scegli il tipo: singolo, doppio o triplo.</li>
+      <li>Scegli base, scomparti e serratura: l'anteprima cambia subito. Il nome del file si scrive da solo.</li>
+      <li>Premi <b>Crea l'immagine</b>: Photoshop accende i livelli del PSD e la passa al motore di BORIN Batch (tela 5120 × 5120, oggetto al 60 %, ombra, colore BORIN, formati scelti).</li>
+      <li><b>Tutte le combinazioni</b> crea in fila tutte le varianti del tipo scelto. Si può fermare: finisce quella in corso.</li>
+    </ol>
+  </article>
+
+  <article class="blocco" id="bloccoLivelli">
+    <h2>Controllo dei livelli <span class="dx" id="contaLivelli"></span></h2>
+    <div id="elencoLivelli"><p class="nota" style="margin:0">I PSD non sono ancora stati letti.</p></div>
+    <p class="nota piccola">Il pannello legge i gruppi e le opzioni dai PSD. Qui segnala nomi scritti male, spazi in più, livelli fuori posto o diversi da un armadio all'altro.</p>
+  </article>
+
+  <article class="blocco">
+    <h2>Progetti PSD</h2>
+    <div class="seg" id="sceltaSorgente" style="margin-bottom:8px">
+      <button data-v="GITHUB">Scaricati da GitHub</button>
+      <button data-v="CARTELLA">Una cartella mia</button>
+    </div>
+    <p class="nota" id="notaSorgente" style="margin-top:0"></p>
+    <div class="percorso" id="percorsoPSD"><span class="via" id="viaPSD"></span><button class="pulsante leggero" id="bApriPSD">Apri</button><button class="pulsante" id="bCartellaPSD">Cambia…</button></div>
+    <table class="tabella" id="tabellaPSD" style="margin-top:8px"></table>
+    <div class="riga" style="margin-top:10px">
+      <button class="pulsante" id="bRileggi" title="Rilegge i PSD e rifà le anteprime">Rifai le anteprime</button>
+      <button class="pulsante" id="bMostraPS" title="Apre il PSD in Photoshop con le scelte accese">Apri il PSD in Photoshop</button>
+    </div>
+  </article>
+
+  <article class="blocco">
+    <h2>Aggiornamenti</h2>
+    <p class="nota" id="statoAggiornamenti" style="margin-top:0">—</p>
+    <div class="riga"><button class="pulsante" id="bCercaAggiornamenti">Cerca aggiornamenti</button></div>
+    <p class="nota piccola">Il pannello controlla da solo all'apertura, al massimo ogni 6 ore, e scarica i PSD nuovi quando cambiano. Le versioni nuove del pannello si installano con «Aggiorna adesso»; poi basta chiudere e riaprire il pannello.</p>
+  </article>
+
+  <article class="blocco">
+    <h2>Aspetto</h2>
+    <div class="seg" id="sceltaTema">
+      <button data-v="auto">Come Photoshop</button>
+      <button data-v="chiaro">Chiaro Inox</button>
+      <button data-v="scuro">Scuro Ossidiana</button>
+    </div>
+  </article>
+
+  <article class="blocco">
+    <h2>Diagnostica</h2>
+    <table class="tabella" id="diagnostica"></table>
+    <div class="riga" style="margin-top:10px">
+      <button class="pulsante" id="bCopiaDiagnostica">Copia per l'assistenza</button>
+      <button class="pulsante" id="bRicarica" title="Ricarica la parte del pannello che lavora dentro Photoshop. Non tocca file e impostazioni.">Ricarica il motore</button>
+      <button class="pulsante" id="bCartellaDati">Cartella dei dati</button>
+    </div>
+  </article>
+</section>
+</main>
+
+<footer class="azioni">
+  <div class="avanzamento" id="avanzamento" hidden>
+    <div class="testo"><span id="avTesto">—</span><span id="avTempo" class="num"></span></div>
+    <div class="barra"><i id="avBarra"></i></div>
+    <div class="fase" id="avFase"></div>
+  </div>
+  <div class="pulsanti" id="pulsanti">
+    <button class="pulsante grande" id="bTutte" disabled>Tutte le combinazioni</button>
+    <button class="pulsante grande primario" id="bCrea" disabled>Crea l'immagine</button>
+  </div>
+  <div class="pulsanti" id="pulsantiCorsa" hidden>
+    <button class="pulsante grande" id="bFerma">Ferma dopo questa</button>
+  </div>
+</footer>
+
+<div id="lente" hidden><div class="pila" id="pilaLente"></div></div>
+<div id="erroreJS" hidden><button title="Chiudi">×</button><span></span></div>
+
+<script src="js/preset.js"></script>
+<script src="js/cep.js"></script>
+<script>if (typeof require === "function") document.write('<script src="js/disco.js"><\/script><script src="js/aggiorna.js"><\/script>');</script>
+<script src="js/app.js"></script>
+</body>
+</html>

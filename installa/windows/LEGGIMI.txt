@@ -1,0 +1,43 @@
+BORIN Configuratore {{VERSIONE}} per Photoshop · Windows
+
+Il pannello di Photoshop per comporre gli armadi spogliatoio BORIN (singolo, doppio, triplo)
+e salvarne le immagini e-commerce con l'output di BORIN Batch.
+
+
+Cosa serve
+- Photoshop 2022 (versione 23.0) o successivo.
+- Internet alla prima apertura: il pannello scarica da solo i progetti PSD degli armadi (circa 85 MB).
+
+
+Installazione
+1. Chiudi Photoshop.
+2. Estrai lo zip (clic destro › Estrai tutto), poi fai doppio clic su «Installa BORIN Configuratore».
+   Se compare «Windows ha protetto il PC»: premi «Ulteriori informazioni», poi «Esegui comunque».
+   Quando la finestra scrive «Fatto», premi un tasto per chiuderla. Non servono i permessi di amministratore.
+3. Apri Photoshop: Finestra › Estensioni (precedenti) › BORIN Configuratore.
+   Con Photoshop in inglese: Window › Extensions (Legacy) › BORIN Configuratore.
+
+
+Come si usa
+1. Scegli il tipo: singolo, doppio o triplo.
+2. Scegli base, scomparti e serratura: l'anteprima cambia subito e il nome del file si scrive da solo.
+3. Premi «Crea l'immagine». «Tutte le …» crea in fila tutte le combinazioni del tipo scelto.
+Le immagini escono come da BORIN Batch: tela 5120 × 5120 a 300 DPI, armadio al 60 %, ombra,
+colore BORIN, PSD, JPG, PNG e WebP.
+
+
+Aggiornamenti
+Il pannello controlla da solo a ogni apertura: se c'è una versione nuova mostra «Aggiorna adesso»,
+e se i progetti PSD sono cambiati li scarica. Poi basta chiudere e riaprire il pannello.
+
+
+Disinstallazione
+1. Fai doppio clic su «Disinstalla BORIN Configuratore».
+2. Chiudi e riapri Photoshop.
+Impostazioni e PSD scaricati restano in %APPDATA%\BORIN\Configuratore armadi.
+
+
+Cosa fa l'installatore
+- Copia la cartella com.borin.configuratore in %APPDATA%\Adobe\CEP\extensions.
+- Accende PlayerDebugMode (CSXS 9-15) nel registro dell'utente, che permette a Photoshop
+  di caricare un'estensione non firmata.

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- BORIN Configuratore armadi · pannello HTML (CEP) per Photoshop 2022 e successivi, Mac e Windows. -->
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.borin.configuratore" ExtensionBundleVersion="1.0.0" ExtensionBundleName="BORIN Configuratore"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ExtensionList>
+    <Extension Id="com.borin.configuratore.pannello" Version="1.0.0"/>
+    <Extension Id="com.borin.configuratore.avvio" Version="1.0.0"/>
+  </ExtensionList>
+  <ExecutionEnvironment>
+    <HostList>
+      <Host Name="PHSP" Version="[23.0,99.9]"/>
+      <Host Name="PHXS" Version="[23.0,99.9]"/>
+    </HostList>
+    <LocaleList>
+      <Locale Code="All"/>
+    </LocaleList>
+    <RequiredRuntimeList>
+      <RequiredRuntime Name="CSXS" Version="11.0"/>
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <Extension Id="com.borin.configuratore.pannello">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./index.html</MainPath>
+          <ScriptPath>./jsx/armadi.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>BORIN Configuratore</Menu>
+          <Geometry>
+            <Size>
+              <Height>860</Height>
+              <Width>460</Width>
+            </Size>
+            <MinSize>
+              <Height>480</Height>
+              <Width>320</Width>
+            </MinSize>
+            <MaxSize>
+              <Height>3000</Height>
+              <Width>1800</Width>
+            </MaxSize>
+          </Geometry>
+          <Icons>
+            <Icon Type="Normal">./img/icona-chiaro.png</Icon>
+            <Icon Type="RollOver">./img/icona-chiaro.png</Icon>
+            <Icon Type="DarkNormal">./img/icona.png</Icon>
+            <Icon Type="DarkRollOver">./img/icona.png</Icon>
+          </Icons>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- Invisibile: parte con Photoshop e apre il pannello quando lo chiede il file «apri-pannello» (js/avvio.js). -->
+    <Extension Id="com.borin.configuratore.avvio">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./avvio.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>false</AutoVisible>
+          <StartOn>
+            <Event>applicationActivate</Event>
+            <Event>com.adobe.csxs.events.ApplicationActivate</Event>
+            <Event>com.adobe.csxs.events.ApplicationInitialized</Event>
+          </StartOn>
+        </Lifecycle>
+        <UI>
+          <Type>Custom</Type>
+          <Geometry>
+            <Size>
+              <Height>1</Height>
+              <Width>1</Width>
+            </Size>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>

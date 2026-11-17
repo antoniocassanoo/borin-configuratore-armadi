@@ -1,0 +1,119 @@
+/* BORIN Configuratore · quello che si aggiunge a borin.css (copiato da BORIN Batch senza modifiche).
+   Direzione (concept.md): la scheda d'ordine di un armadio spogliatoio BORIN, con prospetto e dettagli del catalogo. */
+
+.schede .segnale { display: inline-grid; place-items: center; min-width: 16px; height: 16px; padding: 0 4px; margin-left: 4px;
+  border-radius: 8px; background: var(--attenzione); color: #1f2121; font-size: 10px; font-weight: 700; vertical-align: 1px; }
+
+/* ------------------------------------------------------------------ tipo: tre prospetti frontali in una riga */
+.blocco.riga-tipi { display: flex; align-items: center; gap: 10px; padding: 9px 10px; }
+.blocco.riga-tipi > h2 { margin: 0; flex: none; }
+.tipi { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.tipo {
+  border: 1px solid var(--filetto); background: var(--campo); border-radius: var(--r-s); cursor: pointer; color: var(--testo);
+  padding: 5px 6px; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 6px; min-width: 0; text-align: left;
+}
+.tipo:hover { border-color: var(--accento); }
+.tipo svg { grid-row: 1 / span 2; height: 34px; width: auto; display: block; overflow: visible; }
+.tipo svg .linea { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linejoin: round; }
+.tipo svg .pieno { fill: currentColor; }
+.tipo svg .fondo { fill: var(--piano-2); }
+.tipo b { font-weight: 500; font-size: 12px; line-height: 1.15; align-self: end; overflow: hidden; text-overflow: ellipsis; }
+.tipo small { font-size: 10.5px; color: var(--fioco); line-height: 1.15; align-self: start; }
+.tipo[aria-checked="true"] { background: var(--accento); border-color: var(--accento); color: var(--su-accento); }
+.tipo[aria-checked="true"] small { color: var(--su-accento); opacity: .85; }
+.tipo[aria-checked="true"] svg .fondo { fill: rgba(255, 255, 255, .16); }
+@media (max-width: 400px) {
+  .blocco.riga-tipi { display: block; }
+  .blocco.riga-tipi > h2 { margin-bottom: 8px; }
+  .tipo { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
+  .tipo svg { grid-row: auto; }
+}
+
+/* ------------------------------------------------------------------ banco: anteprima ferma a sinistra, scelte che scorrono */
+.banco { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-items: start; }
+.colonna-vista { position: sticky; top: -12px; z-index: 4; }
+.colonna-scelte { min-width: 0; }
+@media (min-width: 400px) {
+  .banco { grid-template-columns: minmax(150px, .8fr) minmax(0, 1.2fr); }
+}
+@media (min-width: 760px) {
+  .banco { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+}
+
+/* ------------------------------------------------------------------ piatto bianco del catalogo con la pila dei livelli */
+.piatto {
+  position: relative; margin: 0; background: #fff; border: 1px solid var(--filetto); border-radius: var(--r);
+  height: clamp(240px, calc(100vh - 290px), 980px); overflow: hidden; cursor: zoom-in;
+}
+@media (max-width: 399px) { .colonna-vista { position: static; } .piatto { height: clamp(220px, 46vh, 380px); } }
+.pila { position: absolute; left: 0; top: 0; isolation: isolate; }
+.pila img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; }
+.piatto .attesa {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  background: rgba(255, 255, 255, .86); color: #343432; font-size: 11.5px; text-align: center; padding: 14px;
+}
+.piatto .attesa .barra { width: min(180px, 80%); background: #eae8e9; border-color: #d8d6d7; }
+.piatto .vuoto-piatto { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 16px; color: #676b6b; font-size: 11.5px; }
+.sul-piatto {
+  position: absolute; left: 6px; bottom: 6px; z-index: 2; border: 1px solid #d8d6d7; background: rgba(255, 255, 255, .92); color: #2b6489;
+  border-radius: 5px; font-size: 10.5px; font-weight: 500; padding: 3px 7px; cursor: pointer;
+}
+.sul-piatto:hover { border-color: #3578a3; }
+
+/* ------------------------------------------------------------------ targhetta con il nome del file */
+.campo-nome { display: flex; gap: 4px; align-items: center; }
+.campo-nome input { flex: 1; min-width: 0; font-size: 12px; line-height: 1.3; padding: 7px 8px; }
+.campo-nome input.manuale { border-color: var(--attenzione); }
+.targhetta .nota { margin-top: 4px; }
+.colonna-scelte .chip-formati { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 760px) { .colonna-scelte .chip-formati { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* ------------------------------------------------------------------ scelte: righe della scheda d'ordine, caselle con il dettaglio */
+.riga-gruppo { padding: 10px 0 0; margin-top: 10px; border-top: 1px solid var(--filetto); }
+.riga-gruppo:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.riga-gruppo > h3 { margin: 0 0 7px; font-size: 12px; font-weight: 700; display: flex; align-items: baseline; gap: 8px; }
+.riga-gruppo > h3 .dx { margin-left: auto; font-weight: 400; font-size: 11px; color: var(--fioco); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+details.avanzate > summary .riassunto { font-weight: 400; color: var(--fioco); font-size: 11px; margin-left: 6px; }
+
+.blocco.gruppo > h2 .dx { white-space: nowrap; }
+.opzioni { display: grid; grid-template-columns: repeat(var(--colonne, 3), minmax(0, 1fr)); gap: 6px; }
+.opz {
+  position: relative; border: 1px solid var(--filetto); background: var(--campo); border-radius: var(--r-s); padding: 4px 4px 6px;
+  cursor: pointer; text-align: left; color: var(--testo); min-width: 0; display: flex; flex-direction: column; align-items: stretch;
+}
+.opz:hover { border-color: var(--accento); }
+.opz .dett { display: block; width: 100%; position: relative; height: 74px; border-radius: 4px; background: #fff; overflow: hidden; border: 1px solid var(--filetto); }
+.opz b { display: block; font-weight: 500; font-size: 11.5px; line-height: 1.2; margin: 5px 2px 0; }
+.opz[aria-checked="true"] { border-color: var(--accento); box-shadow: inset 0 0 0 1px var(--accento); background: var(--accento-tenue); }
+.opz[aria-checked="true"]::after {
+  content: ""; position: absolute; top: 8px; right: 8px; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--accento) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path d='M3.5 7.2l2.4 2.3 4.6-4.8' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/14px no-repeat;
+}
+.contenuto-spunta { margin: 9px 0 0; }
+@media (min-width: 760px) { .opz .dett { height: 92px; } }
+
+/* ------------------------------------------------------------------ esito: l'immagine finale */
+.esito { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; align-items: start; }
+.esito-img { width: 96px; height: 96px; border: 1px solid var(--filetto); border-radius: var(--r-s); background: #fff; overflow: hidden; display: grid; place-items: center; }
+.esito-img img { max-width: 100%; max-height: 100%; display: block; cursor: zoom-in; }
+.esito-testo { font-size: 11.5px; line-height: 1.45; min-width: 0; overflow-wrap: anywhere; }
+.esito-testo ul { margin: 6px 0 0; padding-left: 16px; }
+
+/* ------------------------------------------------------------------ notifica dei livelli e stato dei PSD */
+#notificaLivelli, #statoProgetti { margin-bottom: 10px; }
+#statoProgetti .barra { margin-top: 6px; }
+.livelli { list-style: none; margin: 0; padding: 0; }
+.livelli li { padding: 6px 0; border-top: 1px solid var(--filetto); font-size: 11.5px; display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 8px; }
+.livelli li:first-child { border-top: 0; }
+.livelli .liv { font-size: 10px; font-weight: 700; text-transform: none; padding: 1px 0; color: var(--fioco); }
+.livelli .liv.liv-errore { color: var(--errore); }
+.livelli .liv.liv-avviso { color: var(--attenzione); }
+.livelli .dove { display: block; color: var(--fioco); font-size: 10.5px; margin-top: 2px; }
+.livelli h3 { font-size: 11.5px; font-weight: 700; margin: 10px 0 4px; }
+.livelli h3:first-child { margin-top: 0; }
+
+/* ------------------------------------------------------------------ lente: la composizione ingrandita */
+#lente { position: fixed; inset: 0; background: #fff; z-index: 60; cursor: zoom-out; overflow: hidden; }
+
+/* avanzamento sotto, fase in piccolo */
+.avanzamento .fase { font-size: 11px; color: var(--fioco); margin-top: 4px; min-height: 1.2em; }
