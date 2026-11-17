@@ -90,6 +90,20 @@ details.avanzate > summary .riassunto { font-weight: 400; color: var(--fioco); f
   background: var(--accento) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path d='M3.5 7.2l2.4 2.3 4.6-4.8' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/14px no-repeat;
 }
 .contenuto-spunta { margin: 9px 0 0; }
+
+/* colore delle pareti: i campioni della tabella MTS HPL */
+.colori { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+@media (min-width: 760px) { .colori { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+.colore-opz {
+  position: relative; border: 1px solid var(--filetto); background: var(--campo); border-radius: var(--r-s); padding: 3px 3px 4px;
+  cursor: pointer; color: var(--testo); min-width: 0; display: flex; flex-direction: column; align-items: stretch; gap: 3px;
+  user-select: none; -webkit-user-select: none;
+}
+.colore-opz:hover { border-color: var(--accento); }
+.colore-opz .campione { display: block; height: 22px; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .16); }
+.colore-opz small { font-size: 10px; line-height: 1.15; text-align: center; color: var(--fioco); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.colore-opz[aria-checked="true"] { border-color: var(--accento); box-shadow: inset 0 0 0 1px var(--accento); background: var(--accento-tenue); }
+.colore-opz[aria-checked="true"] small { color: var(--testo); font-weight: 500; }
 @media (min-width: 760px) { .opz .dett { height: 92px; } }
 
 /* ------------------------------------------------------------------ esito: l'immagine finale */

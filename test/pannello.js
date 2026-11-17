@@ -13,6 +13,7 @@ const tipi = JSON.parse(fs.readFileSync(path.join(EXT, "armadi.json"), "utf8")).
 const PSD = "/Users/prova/Library/Application Support/BORIN/Configuratore armadi/PSD";
 const dati = { estensione: EXT, cartelle: {}, strutture: {}, file: {}, esistenti: [], pesi: {}, cartellaUscita: "/Users/prova/Desktop/Armadi BORIN" };
 dati.file[path.join(EXT, "armadi.json")] = JSON.parse(fs.readFileSync(path.join(EXT, "armadi.json"), "utf8"));
+dati.file[path.join(EXT, "colori.json")] = JSON.parse(fs.readFileSync(path.join(EXT, "colori.json"), "utf8"));
 for (const t of tipi) {
   const r = JSON.parse(fs.readFileSync(path.join(ANT, "st-" + t.id + ".json"), "utf8"));
   if (!r.ok) continue;
@@ -56,6 +57,9 @@ const SCATTI = [
   ["info-livelli", { cache: true, scheda: "info", h: 1800 }],
   ["intro", { cache: true, intro: true, attesa: 1500 }],
   ["esito", { cache: true, azione: "crea", attesa: 2500, h: 1300 }],
+  ["doppio-rosso", { cache: true, impostazioni: { tipo: "doppio", colore: "rosso" } }],
+  ["triplo-grigio-scuro-chiaro", { cache: true, tema: "chiaro", w: 1000, h: 900, impostazioni: { tipo: "triplo", colore: "grigio-scuro" } }],
+  ["singolo-blu-stretto", { cache: true, w: 340, h: 900, impostazioni: { tipo: "singolo", colore: "blu-5015" } }],
   ["vuoto-scomparto", { cache: true, impostazioni: { tipo: "doppio", contenuti: { doppio: { "scomparti-inferiori": false } }, scelte: { doppio: { "scomparti-inferiori": "stivali", base: "piedi-tondi", serratura: "antiscasso" } } } }]
 ];
 for (const [n, o] of SCATTI) if (!solo || solo.includes(n)) scatta(n, o);

@@ -7,6 +7,8 @@
       EXTRA <n> · <Nome>            una sola opzione accesa: le opzioni sono i figli diretti
         <Opzione> (livello)         l'opzione, con i livelli di ritaglio sopra
         <Opzione> (gruppo)          «Scomparto» sempre acceso, «Contenuto · …» spegnibili, il resto come nel file
+      COLORE · <Nome>               le pareti da colorare (livelli pieni, con il loro metodo e la loro opacità):
+                                    spento con «Bianco»; con un colore acceso e riempito di quel colore (solo il colore)
     I livelli «fuori posto» (decisi dal pannello) restano spenti.
 
     - I PSD non si salvano mai: si aprono, si accendono i livelli, si compone e si chiudono senza salvare.
@@ -16,7 +18,7 @@
       Il motore si carica in privato: se è aperto anche il pannello BORIN Batch, il suo BORIN globale resta suo. */
 
 $.global.ARMADI = (function () {
-    var VERSIONE = "1.0.0";
+    var VERSIONE = "1.1.0";
     var BATCH = null;                        // motore di BORIN Batch (privato)
     var APERTI = {};                         // percorso PSD → {doc, nostro}
     var CONTATORE = 0;
@@ -133,14 +135,25 @@ $.global.ARMADI = (function () {
     // ============================================================ albero dei livelli
     // Ogni nodo: percorso (indici dall'alto, «0/2/1»), nome, tipo, visibile (com'è nel file), clip, fusione, bordi, figli.
     // Il percorso è uguale in una copia del documento: serve a ritrovare gli stessi livelli.
+    // Visibilità del livello stesso (l'occhio nel pannello Livelli): il DOM di Photoshop 2027 dà «spento» a ogni livello
+    // dentro un gruppo spento, anche se il suo occhio è acceso (es. i pezzi del «Pomolo» quando la serratura scelta è un'altra).
+    function visibileProprio(l) {
+        try {
+            var r = new ActionReference();
+            r.putProperty(charIDToTypeID("Prpr"), charIDToTypeID("Vsbl"));
+            r.putIdentifier(charIDToTypeID("Lyr "), l.id);
+            return executeActionGet(r).getBoolean(charIDToTypeID("Vsbl"));
+        } catch (e) { return l.visible; }
+    }
     function albero(doc) {
         var z = 0;
+        if (app.activeDocument !== doc) app.activeDocument = doc;      // gli ID dei livelli valgono nel documento attivo
         function visita(cont, prefisso) {
             var out = [], i, l, n;
             for (i = 0; i < cont.layers.length; i++) {
                 l = cont.layers[i];
                 n = {percorso: prefisso + i, _ref: l, nome: String(l.name), tipo: l.typename === "LayerSet" ? "gruppo" : "livello",
-                     visibile: l.visible, clip: false, fusione: nomeEnum(l.blendMode), opacita: Math.round(l.opacity), bordi: bordi(l)};
+                     visibile: visibileProprio(l), clip: false, fusione: nomeEnum(l.blendMode), opacita: Math.round(l.opacity), bordi: bordi(l)};
                 if (n.tipo === "livello") {
                     try { n.clip = !!l.grouped; } catch (e) {}
                     try { n.kind = nomeEnum(l.kind); } catch (e2) {}
@@ -168,6 +181,7 @@ $.global.ARMADI = (function () {
     var RE_EXTRA = /^extra\s*(\d+)\s*[\u00b7\u2022\.\-:\u2013\u2014]?\s*(.+)$/i;
     var RE_CONTENUTO = /^contenuto\s*[\u00b7\u2022\.\-:\u2013\u2014]?\s*(.*)$/i;
     var RE_SCOMPARTO = /^scomparto\b/i;
+    var RE_COLORE = /^colore\b/i;
     var RE_PREDEFINITO = /^(livello|layer|gruppo|group|forma|shape|rettangolo|rectangle|ellisse|ellipse|testo|text)\s*\d*$|\s(copia|copy)(\s\d+)?$|^riempimento generativo|^generative fill|^(bilanciamento colore|curve|livelli|tonalit\u00e0\/saturazione|luminosit\u00e0\/contrasto|esposizione|vividezza|bianco e nero|filtro fotografico|miscelatore canale|mappa sfumatura|correzione colore selettiva|color balance|curves|levels|hue\/saturation|brightness\/contrast|exposure|vibrance|black & white|photo filter|channel mixer|gradient map|selective color)\s*\d*$/i;
 
     function conRitaglio(lista, i) {                       // livelli di ritaglio sopra lista[i] (indici più bassi = più in alto)
@@ -191,6 +205,11 @@ $.global.ARMADI = (function () {
             if (n.tipo === "gruppo" && /^standard$/i.test(pulito(n.nome))) { S.standard = n; continue; }
             m = pulito(n.nome).match(RE_EXTRA);
             if (n.tipo === "gruppo" && m) { S.gruppi.push(leggiGruppo(n, parseInt(m[1], 10), m[2], avviso, controllaNome)); continue; }
+            if (n.tipo === "gruppo" && RE_COLORE.test(pulito(n.nome))) {
+                if (S.colore) avviso("avviso", "Ci sono due gruppi «COLORE»: il pannello usa il primo.", "primo livello");
+                else S.colore = leggiColore(n, avviso, controllaNome);
+                continue;
+            }
             if (n.clip) continue;
             S.altri.push({percorso: n.percorso, nome: pulito(n.nome), visibile: n.visibile});
             avviso("avviso", "«" + pulito(n.nome) + "» è fuori dai gruppi STANDARD ed EXTRA: il pannello lo lascia " + (n.visibile ? "acceso" : "spento") + " come nel file.", "primo livello");
@@ -234,8 +253,29 @@ $.global.ARMADI = (function () {
         return G;
     }
 
+    // Pareti da colorare: i livelli del gruppo COLORE (anche dentro sottogruppi), con metodo e opacità del file.
+    function leggiColore(g, avviso, controllaNome) {
+        var C = {nome: pulito(g.nome), percorso: g.percorso, z: g.z, livelli: []};
+        (function giu(lista, dove) {
+            for (var i = 0; i < lista.length; i++) {
+                var n = lista[i];
+                controllaNome(n, dove);
+                if (n.tipo === "gruppo") { giu(n.figli, dove + " › " + pulito(n.nome)); continue; }
+                if (n.clip) { avviso("avviso", "«" + pulito(n.nome) + "» è un livello di ritaglio dentro «" + C.nome + "»: il pannello non lo colora.", dove); continue; }
+                if (n.kind && n.kind !== "NORMAL" && n.kind !== "SOLIDFILL") {
+                    avviso("avviso", "«" + pulito(n.nome) + "» dentro «" + C.nome + "» non è un livello pieno (è " + n.kind + "): il pannello non lo colora.", dove);
+                    continue;
+                }
+                C.livelli.push({percorso: n.percorso, nome: pulito(n.nome), kind: n.kind || "NORMAL", fusione: n.fusione, opacita: n.opacita,
+                                bordi: n.bordi, z: n.z, visibile: n.visibile});
+            }
+        })(g.figli, C.nome);
+        if (!C.livelli.length) avviso("avviso", "Il gruppo «" + C.nome + "» non ha livelli da colorare.", C.nome);
+        return C;
+    }
+
     function leggiParti(O, gr, avviso, controllaNome, dove) {
-        var lista = gr.figli, i, n, P, rit, k;
+        var lista = gr.figli, i, n, P, rit, k, note = [];
         for (i = 0; i < lista.length; i++) {
             n = lista[i];
             controllaNome(n, dove);
@@ -249,9 +289,13 @@ $.global.ARMADI = (function () {
             for (k = 0; k < rit.length; k++) P.ritaglio.push(rit[k].percorso);
             if (n.kind && n.kind !== "NORMAL" && n.kind !== "SMARTOBJECT" && n.kind !== "TEXT" && n.kind !== "SOLIDFILL" && n.kind !== "GRADIENTFILL" && n.kind !== "PATTERNFILL")
                 P.regolazione = true;                     // regolazione non di ritaglio: agisce su ciò che sta sotto
-            if (P.ruolo === "altro") avviso("info", "«" + P.nome + "» dentro «" + O.nomeFile + "» non è né «Scomparto» né «Contenuto · …»: resta " + (n.visibile ? "acceso" : "spento") + " come nel file.", dove);
+            if (P.ruolo === "altro") note.push("«" + P.nome + "» dentro «" + O.nomeFile + "» non è né «Scomparto» né «Contenuto · …»: resta " + (n.visibile ? "acceso" : "spento") + " come nel file.");
             O.parti.push(P);
         }
+        // la nota serve solo negli scomparti; un'opzione fatta di soli pezzi (una serratura con l'ombra) è normale
+        var struttura = false;
+        for (i = 0; i < O.parti.length; i++) if (O.parti[i].ruolo !== "altro") struttura = true;
+        if (struttura) for (i = 0; i < note.length; i++) avviso("info", note[i], dove);
     }
 
     // ============================================================ quali livelli accendere
@@ -308,15 +352,54 @@ $.global.ARMADI = (function () {
                 }
             }
         }
+        if (S.colore) {                                   // pareti: accese solo con un colore (i livelli come nel file)
+            var hex = !!(scelta && scelta.colore && scelta.colore.hex);
+            accendi(S.colore.percorso, hex);
+            for (i = 0; i < S.colore.livelli.length; i++) accendi(S.colore.livelli[i].percorso, hex && S.colore.livelli[i].visibile);
+        }
         for (p in nascosti) if (nascosti.hasOwnProperty(p)) accendi(p, false);
         return V;
     }
+
+    // Riempie le pareti accese del colore scelto: cambia solo il colore dei pixel (la trasparenza resta), non il metodo
+    // di fusione né l'opacità. Il PSD non si salva mai, quindi il giallo del file resta com'è.
+    function rgbDa(hex) {
+        var h = String(hex).replace(/[^0-9a-f]/gi, ""), c = new SolidColor();
+        if (h.length !== 6) throw new Error("Colore non valido: " + hex);
+        c.rgb.red = parseInt(h.substr(0, 2), 16); c.rgb.green = parseInt(h.substr(2, 2), 16); c.rgb.blue = parseInt(h.substr(4, 2), 16);
+        return c;
+    }
+    function tintaUnita(doc, l, col) {                     // livello «Tinta unita»: si cambia il suo colore
+        doc.activeLayer = l;
+        var d = new ActionDescriptor(), r = new ActionReference(), f = new ActionDescriptor(), k = new ActionDescriptor();
+        r.putEnumerated(stringIDToTypeID("contentLayer"), charIDToTypeID("Ordn"), charIDToTypeID("Trgt"));
+        d.putReference(charIDToTypeID("null"), r);
+        k.putDouble(charIDToTypeID("Rd  "), col.rgb.red); k.putDouble(charIDToTypeID("Grn "), col.rgb.green); k.putDouble(charIDToTypeID("Bl  "), col.rgb.blue);
+        f.putObject(charIDToTypeID("Clr "), charIDToTypeID("RGBC"), k);
+        d.putObject(charIDToTypeID("T   "), stringIDToTypeID("solidColorLayer"), f);
+        executeAction(charIDToTypeID("setd"), d, DialogModes.NO);
+    }
+    function colora(doc, rad, S, scelta) {
+        if (!S.colore || !scelta || !scelta.colore || !scelta.colore.hex) return 0;
+        var col = rgbDa(scelta.colore.hex), I = indice(rad), n = 0;
+        app.activeDocument = doc;
+        for (var i = 0; i < S.colore.livelli.length; i++) {
+            var L = S.colore.livelli[i], nodo = I[L.percorso];
+            if (!nodo || !nodo._ref.visible) continue;
+            if (L.kind === "SOLIDFILL") { tintaUnita(doc, nodo._ref, col); n++; continue; }
+            doc.activeLayer = nodo._ref;
+            doc.selection.selectAll();
+            doc.selection.fill(col, ColorBlendMode.NORMAL, 100, true);
+            doc.selection.deselect();
+            n++;
+        }
+        return n;
+    }
     function applica(rad, V) {                             // cambia solo ciò che serve (ogni cambio è un passo di Photoshop)
-        var I = indice(rad), cambiati = 0;
+        var I = indice(rad), cambiati = 0;                 // confronto con l'occhio del livello letto da albero(), non con il DOM
         for (var p in V) {
             if (!V.hasOwnProperty(p) || !I[p]) continue;
-            var l = I[p]._ref;
-            if (l.visible !== V[p]) { l.visible = V[p]; cambiati++; }
+            if (I[p].visibile !== V[p]) { I[p]._ref.visible = V[p]; I[p].visibile = V[p]; cambiati++; }
         }
         return cambiati;
     }
@@ -392,6 +475,12 @@ $.global.ARMADI = (function () {
                         }
                     }
                 }
+                if (S.colore) for (i = 0; i < S.colore.livelli.length; i++) {      // pareti: sagome da tingere nel pannello
+                    var Lc = S.colore.livelli[i];
+                    if (!Lc.visibile) continue;
+                    pezzi.push({id: "colore__" + i + "-" + sigla(Lc.nome), ruolo: "colore", percorso: Lc.percorso, z: Lc.z,
+                                fusione: Lc.fusione, bordi: Lc.bordi, ritaglio: []});
+                }
                 var opz = new PNGSaveOptions();
                 opz.interlaced = false;
                 try { opz.compression = 6; } catch (e1) {}
@@ -417,8 +506,12 @@ $.global.ARMADI = (function () {
         app.activeDocument = d;
         fase("livelli", {psd: a.psd});
         applica(rad, piano(rad, S, a.scelta || {}));
+        colora(d, rad, S, a.scelta);
         var nome = "BORIN armadio " + (new Date().getTime()) + "-" + (++CONTATORE);
         var unita = d.duplicate(nome, true);
+        // I pixel vengono da foto sRGB e i colori sono i valori sRGB del PDF: si assegna sRGB (senza convertire), così il
+        // motore di BORIN Batch non li sposta convertendo dal profilo del monitor («Display»). Prova: progetti/prove-colore.
+        try { unita.colorProfileName = "sRGB IEC61966-2.1"; } catch (eP) {}
         return {doc: unita, nome: nome, S: S};
     }
 
@@ -468,6 +561,7 @@ $.global.ARMADI = (function () {
             app.activeDocument = d;
             var rad = albero(d), S = interpreta(rad);
             applica(rad, piano(rad, S, a.scelta || {}));
+            colora(d, rad, S, a.scelta);                  // modifica non salvata: si annulla con la cronologia
             delete APERTI[a.psd];                         // da qui è un documento dell'utente
             return true;
         });

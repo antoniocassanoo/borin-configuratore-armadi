@@ -9,7 +9,7 @@
   const $ = (s, el) => (el || document).querySelector(s);
   const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
   const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const ANTEPRIME_V = "1";                         // cambia solo se cambia il formato delle anteprime
+  const ANTEPRIME_V = "2";                         // cambia solo se cambia il formato delle anteprime (2: pareti da colorare)
   const ALTEZZA_ANTEPRIME = 1000;
 
   // ------------------------------------------------------------------ errori del pannello: sempre visibili
@@ -38,7 +38,7 @@
 
   // ------------------------------------------------------------------ aspetto: tema come Photoshop, accento Acciaio Blu
   const S = {
-    tipi: [], regole: {}, tipo: "doppio", strutture: {}, scelte: {}, contenuti: {}, nascondi: {}, avvisi: [],
+    tipi: [], regole: {}, tipo: "doppio", colore: "bianco", strutture: {}, scelte: {}, contenuti: {}, nascondi: {}, avvisi: [],
     nomeManuale: null, uscita: "", export: { psd: true, jpg: true, png: true, webp: true, struttura: "FORMATO" }, tela: "5120",
     psd: { sorgente: "GITHUB", cartella: "" }, aspetto: { tema: "auto" }, ultimoControllo: 0, avvisiNotificati: "",
     info: null, collegato: false, inCorso: false, ferma: false, preparo: null
@@ -83,10 +83,17 @@
   const REGOLE = D.leggiJSON(D.unisci(Ponte.estensione, "armadi.json"), null) || { tipi: [] };
   S.tipi = REGOLE.tipi || [];
   REGOLE.prefissi = REGOLE.prefissi || {}; REGOLE.nomiNelFile = REGOLE.nomiNelFile || {}; REGOLE.ordineNelNome = REGOLE.ordineNelNome || [];
+  // colori delle pareti (tabella MTS HPL): il primo, senza hex, è l'armadio bianco della foto
+  const COLORI = ((D.leggiJSON(D.unisci(Ponte.estensione, "colori.json"), null) || {}).colori || []).filter(c => c && c.id);
+  if (!COLORI.some(c => !c.hex)) COLORI.unshift({ id: "bianco", nome: "Bianco", codice: "", hex: null, nomeFile: REGOLE.colore || "Bianco" });
+  const coloreScelto = () => COLORI.find(c => c.id === S.colore) || COLORI.find(c => !c.hex);
+  const sigleColore = c => String(c.codice || "").split(" · ")[0];                      // «RAL 3001», «Pantone 368 C»
+  const nomeColore = c => (c.nome + " " + sigleColore(c)).trim();
 
   function carica() {
     const m = D.leggiJSON(FILE_IMPOSTAZIONI, {}) || {};
-    for (const k of ["tipo", "scelte", "contenuti", "uscita", "tela", "ultimoControllo", "avvisiNotificati"]) if (m[k] !== undefined) S[k] = m[k];
+    for (const k of ["tipo", "colore", "scelte", "contenuti", "uscita", "tela", "ultimoControllo", "avvisiNotificati"]) if (m[k] !== undefined) S[k] = m[k];
+    if (!COLORI.some(c => c.id === S.colore)) S.colore = coloreScelto().id;
     if (m.export) Object.assign(S.export, m.export);
     if (m.psd) Object.assign(S.psd, m.psd);
     if (m.aspetto) Object.assign(S.aspetto, m.aspetto);
@@ -95,7 +102,7 @@
   }
   function salva() {
     try {
-      D.scriviJSON(FILE_IMPOSTAZIONI, { versione: VERSIONE, tipo: S.tipo, scelte: S.scelte, contenuti: S.contenuti, uscita: S.uscita,
+      D.scriviJSON(FILE_IMPOSTAZIONI, { versione: VERSIONE, tipo: S.tipo, colore: S.colore, scelte: S.scelte, contenuti: S.contenuti, uscita: S.uscita,
         export: S.export, tela: S.tela, psd: S.psd, aspetto: S.aspetto, ultimoControllo: S.ultimoControllo, avvisiNotificati: S.avvisiNotificati });
     } catch (e) { mostraErrore("Impostazioni non salvate: " + e.message); }
   }
@@ -126,14 +133,17 @@
     if (st) for (const g of st.gruppi) {
       if (!g.opzioni.some(o => o.id === sc[g.id])) sc[g.id] = g.predefinita || (ordinate(g)[0] || {}).id;
     }
-    return { opzioni: Object.assign({}, sc), contenuti: Object.assign({}, co), nascondi: (S.nascondi[t.id] || []).slice() };
+    const c = coloreScelto();
+    return { opzioni: Object.assign({}, sc), contenuti: Object.assign({}, co), nascondi: (S.nascondi[t.id] || []).slice(),
+      colore: c && c.hex ? { id: c.id, hex: c.hex, nome: c.nomeFile || nomeColore(c) } : null };
   }
   const haContenuti = o => (o.parti || []).some(p => p.ruolo === "contenuto");
   function nomeAutomatico(t, scelta) {
     const st = S.strutture[t.id];
     if (!st) return t.nomeFile;
     const ordine = REGOLE.ordineNelNome, pos = g => { const i = ordine.indexOf(g.id); return i < 0 ? 100 + g.numero : i; };
-    const parti = [t.nomeFile, REGOLE.colore || "Bianco"];
+    const bianco = (COLORI.find(c => !c.hex) || {}).nomeFile || REGOLE.colore || "Bianco";
+    const parti = [t.nomeFile, scelta.colore && st.colore ? scelta.colore.nome : bianco];      // senza «COLORE · …» nel PSD resta bianco
     for (const g of st.gruppi.slice().sort((a, b) => pos(a) - pos(b))) {
       const o = g.opzioni.find(x => x.id === scelta.opzioni[g.id]);
       if (!o) continue;
@@ -155,12 +165,26 @@
     const nasc = new Set(scelta.nascondi || []);
     return st.anteprime.pezzi.filter(p => {
       if (nasc.has(p.percorso)) return false;
+      if (p.ruolo === "colore") return !!(scelta.colore && scelta.colore.hex);   // pareti: solo con un colore
       if (!p.gruppo) return true;                                  // corpo e livelli sempre accesi
       if (scelta.opzioni[p.gruppo] !== p.opzione) return false;
       if (p.ruolo === "contenuto") return scelta.contenuti[p.gruppo] !== false;
       if (p.ruolo === "altro") { const x = parteDi(st, p.percorso); return !x || x.accesaNelFile; }
       return true;
     });
+  }
+  // Pareti: la sagoma del livello (il suo PNG) riempita del colore scelto da un filtro SVG, con il metodo del PSD
+  // (Moltiplica o Normale) e l'opacità già nella trasparenza del PNG. Un solo filtro: il colore è uno per volta.
+  function filtroTinta() {
+    let f = document.getElementById("tintaColore");
+    if (f) return f;
+    const ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("width", "0"); svg.setAttribute("height", "0"); svg.setAttribute("aria-hidden", "true");
+    svg.style.cssText = "position:absolute;width:0;height:0;overflow:hidden";
+    svg.innerHTML = `<filter id="filtroTinta" color-interpolation-filters="sRGB"><feFlood id="tintaColore" flood-color="#ffffff"/>` +
+      `<feComposite in2="SourceAlpha" operator="in"/></filter>`;
+    document.body.appendChild(svg);
+    return document.getElementById("tintaColore");
   }
   function creaPila(el, st) {
     el.innerHTML = "";
@@ -169,12 +193,14 @@
       img.src = D.urlFile(D.unisci(st.cartella, p.file));
       img.alt = ""; img.draggable = false; img.dataset.id = p.id;
       if (FUSIONI[p.fusione]) img.style.mixBlendMode = FUSIONI[p.fusione];
+      if (p.ruolo === "colore") { filtroTinta(); img.style.filter = "url(#filtroTinta)"; }
       img.style.display = "none";
       el.appendChild(img);
     }
   }
   function mostraPila(el, st, scelta) {
     const vis = new Set(pezziVisibili(st, scelta).map(p => p.id));
+    if (scelta.colore && scelta.colore.hex) filtroTinta().setAttribute("flood-color", scelta.colore.hex);
     for (const img of el.children) img.style.display = vis.has(img.dataset.id) ? "" : "none";
   }
   function unione(lista) {
@@ -272,7 +298,7 @@
     const t = tipoAttivo(), st = S.strutture[t.id], box = $("#gruppi");
     if (!st) { box.innerHTML = `<p class="nota" style="margin:0">Le scelte compaiono quando l'anteprima è pronta.</p>`; $("#contaCombinazioni").textContent = ""; return; }
     const sc = sceltaDi(t);
-    box.innerHTML = st.gruppi.map(g => {
+    box.innerHTML = sezioneColore(st) + st.gruppi.map(g => {
       const scelta = g.opzioni.find(o => o.id === sc.opzioni[g.id]);
       const conCont = scelta && haContenuti(scelta);
       return `<section class="riga-gruppo" data-gruppo="${esc(g.id)}"><h3>${esc(g.nome)}<span class="dx">${esc(scelta ? scelta.nome : "")}</span></h3>` +
@@ -293,9 +319,25 @@
       inquadra(pila, dett, st, rettOpzione(st, g, o), 1);
     });
   }
+  // Colore delle pareti: la tabella MTS HPL in caselle; il bianco è l'armadio della foto. Uguale per i tre tipi.
+  function sezioneColore(st) {
+    const c = coloreScelto();
+    if (!st.colore || COLORI.length < 2) return "";
+    return `<section class="riga-gruppo" data-sezione="colore"><h3>Colore<span class="dx" id="nomeColore">${esc(nomeColore(c))}</span></h3>` +
+      `<div class="colori" role="radiogroup" aria-label="Colore delle pareti">` + COLORI.map(k =>
+        `<button class="colore-opz" role="radio" data-colore="${esc(k.id)}" aria-checked="${k.id === c.id}" title="${esc(nomeColore(k) + (k.codice ? " · " + k.codice.split(" · ").slice(1).join(" · ") : ""))}">` +
+        `<span class="campione" style="background:${esc(k.hex || "#ffffff")}"></span><small>${esc(sigleColore(k).replace(/^(RAL|Pantone)\s+/, "") || k.nome)}</small></button>`).join("") +
+      `</div><p class="nota piccola" style="margin:6px 0 0">Tetto, fianchi e ante; gli interni restano bianchi.</p></section>`;
+  }
+  function aggiornaColore() {
+    const c = coloreScelto(), n = $("#nomeColore");
+    if (n) n.textContent = nomeColore(c);
+    $$(".colore-opz").forEach(b => b.setAttribute("aria-checked", String(b.dataset.colore === c.id)));
+  }
   function aggiornaGruppi() {                        // dopo un clic: solo stati e dettagli, senza ricostruire le immagini
     const t = tipoAttivo(), st = S.strutture[t.id];
     if (!st) return;
+    aggiornaColore();
     const sc = sceltaDi(t);
     $$(".riga-gruppo").forEach(sez => {
       const g = st.gruppi.find(x => x.id === sez.dataset.gruppo);
@@ -310,6 +352,13 @@
     });
   }
   $("#gruppi").addEventListener("click", e => {
+    const k = e.target.closest(".colore-opz");
+    if (k) {
+      if (S.inCorso || k.dataset.colore === S.colore) return;
+      S.colore = k.dataset.colore; S.nomeManuale = null; salva();
+      aggiornaGruppi(); disegnaAnteprima(); disegnaNome(); disegnaUscita();
+      return;
+    }
     const b = e.target.closest(".opz");
     if (!b || S.inCorso) return;
     const t = tipoAttivo(), sc = S.scelte[t.id] || (S.scelte[t.id] = {});
@@ -471,6 +520,7 @@
           if (trovato) break;
         }
         if (!trovato) {
+          if (!(o.parti || []).some(x => x.ruolo !== "altro")) continue;       // opzione di soli pezzi (serratura e ombre): normale
           lista.push({ tipo: t.id, livello: "info", testo: `«${pulito(p.nome)}» dentro «${o.nomeFile}» non è né «Scomparto» né «Contenuto · …»: resta ${p.accesaNelFile ? "acceso" : "spento"} come nel file.`, dove: g.nomeFile });
           continue;
         }
@@ -498,6 +548,10 @@
       for (const t of pronti) if (!conGruppo.includes(t))
         lista.push({ tipo: t.id, livello: "info", dove: "primo livello", testo: `Il ${t.nome.toLowerCase()} non ha il gruppo «${nomiGruppo[gid]}», che c'è nel ${conGruppo.map(x => x.nome.toLowerCase()).join(" e nel ")}.` });
     }
+    // pareti da colorare: il gruppo «COLORE · …» deve esserci in tutti i PSD
+    const conColore = pronti.filter(t => S.strutture[t.id].colore);
+    if (conColore.length) for (const t of pronti) if (!S.strutture[t.id].colore)
+      lista.push({ tipo: t.id, livello: "avviso", dove: "primo livello", testo: `Il ${t.nome.toLowerCase()} non ha il gruppo «COLORE · Pareti» con le pareti da colorare: lì il colore scelto non si vede e l'immagine resta bianca.` });
     for (const a of lista) a.testo = a.testo.replace(/«([^»]*)»/g, (m, x) => "«" + visibili(x) + "»");   // spazi in più, in vista
     S.avvisi = lista.concat(S.avvisi.filter(a => /^Anteprima non preparata/.test(a.testo)));
     S.nascondi = nascondi;

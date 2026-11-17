@@ -19,7 +19,7 @@ I due link scaricano sempre l'ultima versione. Le versioni precedenti sono nelle
 2. Chiudi Photoshop e fai doppio clic su **Installa BORIN Configuratore**. Quando la finestra scrive «Fatto», premi un tasto.
 3. Apri Photoshop: **Finestra › Estensioni (precedenti) › BORIN Configuratore**
    (in inglese: Window › Extensions (Legacy) › BORIN Configuratore).
-4. Alla prima apertura il pannello scarica da solo i tre progetti PSD (circa 85 MB) e prepara le anteprime.
+4. Alla prima apertura il pannello scarica da solo i tre progetti PSD (circa 65 MB) e prepara le anteprime.
 
 Se il sistema blocca l'installatore:
 - **Mac**: clic destro sul file › Apri › Apri; su macOS 15 e successivi anche Impostazioni di Sistema › Privacy e
@@ -29,8 +29,9 @@ Se il sistema blocca l'installatore:
 ## Usare
 
 1. Scegli il tipo: singolo, doppio o triplo.
-2. Scegli base, scomparti inferiori e serratura: l'anteprima cambia subito e il nome del file si scrive da solo
-   (per esempio «Armadio Doppia Anta - Bianco - Serratura Antiscasso - Piedini Avvitati - Scarpe 2 Paia»).
+2. Scegli il colore delle pareti (tabella MTS HPL: bianco e 10 colori; gli interni restano bianchi), poi base,
+   scomparti inferiori e serratura: l'anteprima cambia subito e il nome del file si scrive da solo
+   (per esempio «Armadio Doppia Anta - Rosso RAL 3001 - Serratura Antiscasso - Piedini Avvitati - Scarpe 2 Paia»).
 3. Premi **Crea l'immagine**. **Tutte le …** crea in fila tutte le combinazioni del tipo scelto e si può fermare.
 
 ## Aggiornamenti

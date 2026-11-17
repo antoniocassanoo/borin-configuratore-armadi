@@ -1,0 +1,16 @@
+{
+  "nota": "Colori delle pareti: tabella «COLORI MTS HPL» di GES Group (TABELLA COLORI MTS HPL CON RAL.pdf). hex = campione del PDF aperto in Photoshop, lo stesso valore della contagocce. «bianco» è l'armadio della foto, senza colore. nomeFile va nel nome dell'immagine. Il pannello colora i livelli del gruppo «COLORE · Pareti» dei PSD: cambia solo il colore, non il metodo di fusione né l'opacità.",
+  "colori": [
+    { "id": "bianco", "nome": "Bianco", "codice": "RAL 9016 · MKB0101", "hex": null, "nomeFile": "Bianco" },
+    { "id": "verde", "nome": "Verde", "codice": "Pantone 368 C · MKCO491", "hex": "#86AA46", "nomeFile": "Verde Pantone 368 C" },
+    { "id": "rosso", "nome": "Rosso", "codice": "RAL 3001 · MKR0361", "hex": "#9D1D2D", "nomeFile": "Rosso RAL 3001" },
+    { "id": "giallo", "nome": "Giallo", "codice": "RAL 1003 · MK8601", "hex": "#F8B947", "nomeFile": "Giallo RAL 1003" },
+    { "id": "grigio-scuro", "nome": "Grigio scuro", "codice": "RAL 7024 · MKG0591", "hex": "#424446", "nomeFile": "Grigio Scuro RAL 7024" },
+    { "id": "grigio", "nome": "Grigio", "codice": "RAL 7040 · MKG0031", "hex": "#9BA2A4", "nomeFile": "Grigio RAL 7040" },
+    { "id": "grigio-chiaro", "nome": "Grigio chiaro", "codice": "RAL 7035 · MKG0291", "hex": "#BDC1C4", "nomeFile": "Grigio Chiaro RAL 7035" },
+    { "id": "blu-5023", "nome": "Blu", "codice": "RAL 5023 · MKC0181", "hex": "#567092", "nomeFile": "Blu RAL 5023" },
+    { "id": "blu-5015", "nome": "Blu", "codice": "RAL 5015 · MKB0011", "hex": "#0061A8", "nomeFile": "Blu RAL 5015" },
+    { "id": "azzurro", "nome": "Azzurro", "codice": "Pantone 644 C · MKB0481", "hex": "#9AB4D8", "nomeFile": "Azzurro Pantone 644 C" },
+    { "id": "beige", "nome": "Beige", "codice": "RAL 1015 · MKC0171", "hex": "#F5EBD0", "nomeFile": "Beige RAL 1015" }
+  ]
+}

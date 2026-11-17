@@ -1,4 +1,4 @@
-# BORIN Configuratore 1.0 · note di sviluppo
+# BORIN Configuratore 1.1 · note di sviluppo
 
 Estensione CEP per Photoshop 2022+ (Mac e Windows): compone gli armadi dai PSD a livelli ed esporta con il motore di
 BORIN Batch. Repository pubblico `antoniocassanoo/borin-configuratore-armadi` (codice e release; i pannelli lo leggono
@@ -17,7 +17,8 @@ senza token).
 | `…/js/cep.js` | ponte con Photoshop; le chiamate al motore passano una alla volta |
 | `…/js/preset.js`, `…/css/borin.css` | copiati da BORIN Batch senza modifiche (valori BORIN, stile); `css/armadi.css` aggiunge il resto |
 | `…/js/avvio.js` | estensione invisibile: apre il pannello quando trova `apri-pannello` nella cartella dei dati |
-| `…/armadi.json` | i tre tipi (nome, PSD, nome nel file), colore, ordine e prefissi del nome del file |
+| `…/armadi.json` | i tre tipi (nome, PSD, nome nel file), ordine e prefissi del nome del file |
+| `…/colori.json` | colori delle pareti (tabella MTS HPL, valori del PDF aperto in Photoshop): id, nome, codice, hex, nome nel file; il primo senza hex è il bianco della foto |
 | `estensione/sorgenti/` | `index.modello.html` + logo → `node estensione/sorgenti/monta.js` scrive `index.html` |
 | `installa/`, `crea_pacchetti.sh`, `pubblica.sh` | installatori, pacchetti in `dist/`, pubblicazione |
 | `test/` | `motore.jsx` (motore in Photoshop via osascript), `pannello.js` + `finto.js` (pannello in Chrome), `cdp.js` (pannello aperto in Photoshop, porta 8089) |
@@ -35,7 +36,15 @@ Il pannello legge i gruppi dal file: un livello nuovo dentro un gruppo EXTRA div
   L'opzione accesa nel file è quella proposta la prima volta. I livelli di ritaglio vanno con il loro livello.
 - Un'opzione può essere un gruppo: «Scomparto…» sempre acceso, «Contenuto · …» spegnibile (casella «Con le scarpe dentro»),
   gli altri livelli come nel file.
-- Ordine e prefissi nel nome del file: `armadi.json` (`ordineNelNome`, `prefissi`, `nomiNelFile`, `vuoto`).
+- `COLORE · <Nome>` (1.1): le pareti da colorare, livelli pieni con il loro metodo (Moltiplica o Normale) e la loro
+  opacità. Con «Bianco» il gruppo si spegne; con un colore si accende e ogni livello si riempie del colore mantenendo
+  la trasparenza (cambia solo il colore: metodo, opacità e maschere restano). Sta tra `EXTRA 3` e `EXTRA 1`: le pareti
+  coprono il bordo degli scomparti, le serrature stanno sopra le pareti. Livelli dentro i sottogruppi valgono.
+- Un'opzione gruppo fatta di soli pezzi (es. `Pomolo`: pomoli e ombre) è normale: niente note sui nomi dei pezzi.
+- Ordine e prefissi nel nome del file: `armadi.json` (`ordineNelNome`, `prefissi`, `nomiNelFile`, `vuoto`); il colore
+  da `colori.json › nomeFile` (con «Bianco» o senza `COLORE` nel PSD: «Bianco»).
+- Visibilità: il motore legge l'occhio del livello con l'Action Manager (`visibileProprio`). Il DOM di Photoshop 2027
+  dà «spento» a ogni livello dentro un gruppo spento: i pezzi delle opzioni non scelte sembrerebbero spenti.
 
 **Controllo dei livelli** (Info, e una notifica in cima e del sistema quando cambia l'elenco):
 spazi in più, nomi lasciati da Photoshop, gruppi vuoti, livelli fuori dai gruppi, nomi scritti in modo diverso tra i PSD,
@@ -44,10 +53,12 @@ altro gruppo (anche con un nome simile, distanza ≤ 2). I livelli fuori posto r
 
 ## Anteprime ed export
 
-- `anteprime`: copia del PSD ridotta a 1000 px di altezza, un PNG per pezzo (corpo, ogni opzione, ogni parte), tutti della
-  stessa tela; il pannello li impila con `mix-blend-mode` (le ombre in Moltiplica). Cache per percorso, peso e data del PSD:
+- `anteprime`: copia del PSD ridotta a 1000 px di altezza, un PNG per pezzo (corpo, ogni opzione, ogni parte, ogni parete di `COLORE`), tutti della
+  stessa tela; il pannello li impila con `mix-blend-mode` (le ombre in Moltiplica). Le pareti si tingono con un filtro SVG
+  (`#filtroTinta`: colore pieno dentro la trasparenza del PNG) e il loro metodo: niente maschere CSS, che con i file locali
+  possono essere bloccate. Cache per percorso, peso e data del PSD:
   se il PSD cambia, le anteprime si rifanno da sole (circa 8 s per tipo).
-- `esporta`: accende i livelli nel PSD (o in una copia, se l'utente lo ha già aperto), ne fa una copia unita a un livello,
+- `esporta`: accende i livelli nel PSD (o in una copia, se l'utente lo ha già aperto), riempie le pareti del colore scelto, ne fa una copia unita a un livello (con sRGB assegnato: i pixel e i colori del PDF sono valori sRGB; senza, BORIN Batch li convertirebbe dal profilo del monitor e il rosso 3001 uscirebbe (168, 0, 40)),
   la passa a `BATCH.chiama("elabora", …)` con il preset «Già scontornata» di BORIN Batch e i formati scelti, poi chiude tutto
   senza salvare. Con «Tutte le …» il PSD resta aperto fino all'ultima combinazione.
 - Il motore di BORIN Batch si carica in privato (`caricaBatch`): se il pannello BORIN Batch è aperto, il suo `BORIN` globale
@@ -77,8 +88,18 @@ La copia di sviluppo non si aggiorna da GitHub (si aggiorna con git).
 - Pannello dentro Photoshop (CEF 99): scelte con clic, «Crea l'immagine» (15 s), «Tutte le 9» del singolo (1 min 48 s), nessun documento lasciato aperto.
 - Pannello in Chrome: temi chiaro e scuro, larghezze 340, 460 e 1000 px, Gotham caricato, nessuna tracimazione.
 
+## Collaudi 1.1 (17/11/2026, Photoshop 28.0 su Mac)
+
+- PSD sistemati dai file «FINITO» dell'utente (`../progetti/script/colori-17-11/`): confronto al pixel con gli originali,
+  a parità di livelli accesi, diverso solo dove serviva (fondo del triplo, bordo pareti/scomparti di 1–4 px).
+- Motore: anteprime dei 3 PSD senza avvisi; export rosso 3001 (anta piena #971C2C contro #9D1D2D del PDF: lo scarto è la
+  mappa «BORIN 26»), grigio scuro 7024 (#3D4145 contro #424446), blu 5015 sul singolo (pareti al 90 % in Moltiplica:
+  più chiaro, #1E71B2), bianco con il pomolo (niente serratura della foto sotto).
+- Pannello in Chrome (temi, 340/460/1000 px, nessuna tracimazione) e dentro Photoshop (CEF): il colore si vede.
+
 ## Da fare / idee
 
-- Colori delle ante (facoltativi): un gruppo EXTRA in più nei PSD basterebbe al pannello.
+- Configurazioni del colore (solo ante, ante alternate, ante e tetto…): servono livelli separati per parte; nel triplo
+  tetto e fianco sono un livello solo («Tetto e fianco»).
 - Windows: installatori controllati solo staticamente, da provare su un PC.
 - App «BORIN Configuratore» come in BORIN Batch (l'estensione invisibile c'è già).

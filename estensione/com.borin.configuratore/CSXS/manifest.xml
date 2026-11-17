@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- BORIN Configuratore armadi · pannello HTML (CEP) per Photoshop 2022 e successivi, Mac e Windows. -->
-<ExtensionManifest Version="7.0" ExtensionBundleId="com.borin.configuratore" ExtensionBundleVersion="1.0.0" ExtensionBundleName="BORIN Configuratore"
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.borin.configuratore" ExtensionBundleVersion="1.1.0" ExtensionBundleName="BORIN Configuratore"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
-    <Extension Id="com.borin.configuratore.pannello" Version="1.0.0"/>
-    <Extension Id="com.borin.configuratore.avvio" Version="1.0.0"/>
+    <Extension Id="com.borin.configuratore.pannello" Version="1.1.0"/>
+    <Extension Id="com.borin.configuratore.avvio" Version="1.1.0"/>
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>
